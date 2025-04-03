@@ -125,6 +125,8 @@ python3 main.py
 - Position movement in NED frame
 - Safe landing
 
+---
+
 ## TODO / Future Work
 
 - Implement grid search path planner
