@@ -1,0 +1,6 @@
+mavsdk==1.4.1                 # MAVSDK core
+opencv-python==4.8.1.78       # For computer vision
+numpy==1.24.4                 # Numerical processing
+torch==2.0.1                  # ML/AI (optional)
+torchvision==0.15.2           # Vision models (optional)
+pytest==8.1.1                 # Testing (optional)

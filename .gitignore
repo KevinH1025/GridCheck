@@ -1,0 +1,22 @@
+# === Python cache ===
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.log
+
+# === VSCode settings ===
+.vscode/
+
+# === Virtual Environment ===
+drone_control/venv/
+
+# === PX4 build folders ===
+px4/PX4-Autopilot/
+
+# === Optional: ignore simulation artifacts ===
+simulation/*.log
+simulation/*.sav
+
+# === Ignore OS files ===
+.DS_Store
+Thumbs.db
