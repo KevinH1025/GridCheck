@@ -35,6 +35,7 @@ DroneAI-Project/
 │   │   ├── flight.py            # Arming, takeoff, landing, fight_to functions
 │   │   ├── mission.py           # mission logic
 │   │   └── battery_manager.py   # Battery monitoring & recharge logic (planned)
+│   │   └── utils.py             # set ups for simulation (port, ...)
 │   │
 │   ├── ai_module/         # YOLO detection module
 │   │   └── detector.py    # Object detection logic (planned)
