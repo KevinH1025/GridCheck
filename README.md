@@ -1,4 +1,4 @@
-# GridCheckAI
+# GridCheck
 
 A complete autonomous drone system for grid search with AI detection and self-recharging logic.  
 This project uses **PX4 SITL + Gazebo + MAVSDK + Python** to simulate, control, and automate missions.
@@ -36,7 +36,7 @@ DroneAI-Project/
 │   │   ├── mission.py           # mission logic
 │   │   └── battery_manager.py   # Battery monitoring & recharge logic (planned)
 │   │
-│   ├── ai_module/         # YOLO detection module (planned)
+│   ├── ai_module/         # YOLO detection module
 │   │   └── detector.py    # Object detection logic (planned)
 │               
 ├── README.md              # Project description and setup guide
