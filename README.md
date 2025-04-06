@@ -9,7 +9,7 @@ This project uses **PX4 SITL + Gazebo + MAVSDK + Python** to simulate, control, 
 
 - PX4 SITL simulation with Gazebo Classic
 - MAVSDK Python integration
-- Takeoff, landing & grid search using **Offboard mode**
+- Takeoff, landing & grid search using Offboard mode
 - Real-time telemetry monitoring
 - AI object detection module (YOLO - coming soon)
 - Self-recharging logic (in development)
