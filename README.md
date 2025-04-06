@@ -94,7 +94,7 @@ source venv/bin/activate
 # Install Python packages
 pip install -r requirements.txt
 
-# If not using VScode, activate venv before running run the project:
+# If not using VScode, activate venv before running the project
 source venv/bin/activate
 ```
 
