@@ -8,4 +8,5 @@ async def start_sim():
         if state.is_connected: # check the drone connection
             print("Drone discovered!")
             break
+
     return drone

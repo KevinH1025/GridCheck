@@ -31,17 +31,14 @@ class FlightController():
         await self.drone.action.land()
         print("Landing...")
 
-        # check if it turned into new mode
-        await asyncio.sleep(3.0)
-
         # is drone still flying?
         async for in_air in self.drone.telemetry.in_air(): 
             if not in_air:
                 print("Drone landed")
                 break
     
-    # fly in NED coordinates
-    async def fly_to(self, target_pos:tuple):
+    # fly in NED coordinates -> more accurate
+    async def NED_fly_to(self, target_pos:tuple):
         print(f"moving to: North = {target_pos[0]}, East = {target_pos[1]}, Down = {target_pos[2]}")
 
         # to go into off board it needs to get good estimation of local position
@@ -76,10 +73,57 @@ class FlightController():
             # ~10Hz update rate
             await asyncio.sleep(0.1)  
 
+    # fly in GPS coordinates -> less accurate -> IT DOES NOT WORK, I DO NOT KNOW WHY
+    async def GPS_fly_to(self, target:tuple):
+        # get current postion in deg 
+        async for position in self.drone.telemetry.position():
+            break
+
+        # conversion meters in degree
+        delta_degs = self.distance_to_deg(target, position.latitude_deg)
+
+        # update the coordinates
+        target_lat = position.latitude_deg + delta_degs[0]
+        target_lon = position.longitude_deg + delta_degs[1]
+        target_alt = position.absolute_altitude_m + target[2]
+
+        # go to this new location
+        await self.drone.action.goto_location(latitude_deg = target_lat,
+                                              longitude_deg = target_lon,
+                                              absolute_altitude_m = target_alt,
+                                              yaw_deg = 0
+                                              )
+        
+        # print to debug
+        print(f"moving to: lat = {target_lat}, lon = {target_lon}, alt = {target_alt}")
+
+        # wait until it reaches 
+        async for position in self.drone.telemetry.position():
+            dist_lat = abs(target_lat - position.latitude_deg) * 111320
+            dist_lon = abs(target_lon - position.longitude_deg) * 111320 * math.cos(math.radians(position.latitude_deg))
+            dist_alt = abs(target_alt - position.absolute_altitude_m)
+            if dist_lat < 0.5 and dist_lon < 0.5 and dist_alt < 0.5:
+                print(f"reached: lat = {target_lat}, lon = {target_lon}, alt = {target_alt}")
+                break
+
     # go home function
     async def go_home(self):
-        current_pos:PositionNed = await self.get_pos()
-        await self.fly_to((0, 0, current_pos.down_m, 0))
+        async for mode in self.drone.telemetry.flight_mode():
+            break
+
+        if mode is FlightMode.OFFBOARD:
+            current_pos:PositionNed = await self.get_pos()
+            await self.NED_fly_to((0, 0, current_pos.down_m, 0))
+            # land
+            await self.land()
+        else:
+            self.drone.action.set_return_to_launch_altitude(10)
+            self.drone.action.return_to_launch()
+            print("returning home...")
+            async for in_air in self.drone.telemetry.in_air(): 
+                if not in_air:
+                    print("Drone landed")
+                    break
 
     #------------------------------------------------------
     # helper function to get current position of the drone
@@ -97,3 +141,11 @@ class FlightController():
             (current.east_m - target.east_m)**2 + 
             (current.down_m - target.down_m)**2
         )
+    
+    # helper function for converstion, but not accurate only for testing. TODO: WGS84 ellipsoid model
+    @staticmethod
+    def distance_to_deg(target, lat0):
+        delta_lat = target[0] / 111320.0
+        delta_lon = target[1] / (111320.0 * math.cos(math.radians(lat0)))
+        delta_degs = (delta_lat, delta_lon)
+        return delta_degs
