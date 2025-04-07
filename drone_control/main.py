@@ -13,8 +13,8 @@ async def main():
 
     # THIS DOES NOT WORK, NOT SURE WHY
     # simple mission from misson.py
-    # square_mission = square()[:-1]
-    # for pos in square_mission:
+    #square_mission = square()[:-1]
+    #for pos in square_mission:
     #    await fc.GPS_fly_to(pos)
 
     # simple mission from misson.py

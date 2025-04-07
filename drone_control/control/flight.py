@@ -114,6 +114,7 @@ class FlightController():
         if mode is FlightMode.OFFBOARD:
             current_pos:PositionNed = await self.get_pos()
             await self.NED_fly_to((0, 0, current_pos.down_m, 0))
+            print("returning home...")
             # land
             await self.land()
         else:
