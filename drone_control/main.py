@@ -11,16 +11,17 @@ async def main():
     # take off
     await fc.takeoff() # -> altitude of around 1.7m
 
-    # THIS DOES NOT WORK, NOT SURE WHY
+    # using goto_location -> GPS based
     # simple mission from misson.py
-    #square_mission = square()[:-1]
-    #for pos in square_mission:
-    #    await fc.GPS_fly_to(pos)
-
-    # simple mission from misson.py
-    square_mission = square()
+    square_mission = square()[:-1]
     for pos in square_mission:
-        await fc.NED_fly_to(pos)
+        await fc.GPS_fly_to(pos)
+
+    # using NED coordiantes -> vision based
+    # simple mission from misson.py
+    #square_mission = square()
+    #for pos in square_mission:
+    #   await fc.NED_fly_to(pos)
 
     # go back to origin
     await fc.go_home()

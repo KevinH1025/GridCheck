@@ -73,7 +73,6 @@ class FlightController():
             # ~10Hz update rate
             await asyncio.sleep(0.1)  
 
-    # fly in GPS coordinates -> less accurate -> IT DOES NOT WORK, I DO NOT KNOW WHY
     async def GPS_fly_to(self, target:tuple):
         # get current postion in deg 
         async for position in self.drone.telemetry.position():
@@ -85,7 +84,7 @@ class FlightController():
         # update the coordinates
         target_lat = position.latitude_deg + delta_degs[0]
         target_lon = position.longitude_deg + delta_degs[1]
-        target_alt = position.absolute_altitude_m + target[2]
+        target_alt = position.absolute_altitude_m - target[2]
 
         # go to this new location
         await self.drone.action.goto_location(latitude_deg = target_lat,
@@ -118,8 +117,8 @@ class FlightController():
             # land
             await self.land()
         else:
-            self.drone.action.set_return_to_launch_altitude(10)
-            self.drone.action.return_to_launch()
+            await self.drone.action.set_return_to_launch_altitude(10)
+            await self.drone.action.return_to_launch()
             print("returning home...")
             async for in_air in self.drone.telemetry.in_air(): 
                 if not in_air:
