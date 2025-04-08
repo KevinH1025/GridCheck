@@ -145,47 +145,61 @@ used to monitor telemetry, view flight status, and send mission commands in real
    - If the connection works, you're good to go
    - If nothing shows up within a few seconds:
      - Go to **Settings → Comm Links**
-     - Click **Add** or **Edit**, set type to **UDP**
-     - Set the listening port to `14551`
+     - Check **Automatically Connect on Start** box
+     - Click **Add**, set type to **UDP**
+     - Set port to `14551`
      - Click **Connect**
      - Then follow the next step
 
-3. **Update PX4 MAVLink Port**
+3. **Update PX4 MAVLink Port (WSL2 + Windows QGroundControl)**
 
-If QGC still doesn’t detect PX4, your PX4 instance may be sending on an unexpected port like `18570`.
-In that case, modify the PX4 startup script `px4-rc.mavlink`:
-```bash
-# Navigate to the MAVLink config script
-cd px4/PX4-Autopilot/ROMFS/px4fmu_common/init.d-posix/
-
-# Open the file
-nano px4-rc.mavlink
-
-# Add:
-mavlink stop -u 18570 # Stop default instance 0
-
-# Start your custom instance 0
-mavlink start -u 14551 -p -m onboard -r 4000000
-```
+   If QGroundControl is running on **Windows** and PX4 is running in **WSL2 (Ubuntu)**, the two systems are on different virtual networks.  
+   This means PX4's MAVLink messages won't reach QGroundControl unless you explicitly set the Windows IP address as the target.
+   
+   In **Ubuntu** run:
+   ```bash 
+   cat /etc/resolv.conf | grep nameserver
+   ```
+   
+   You’ll get something like:
+   ```bash 
+   nameserver 172.27.96.1
+   ```
+   
+   This is your Windows host IP from inside WSL2. Now modify the PX4 startup script `px4-rc.mavlink`:
+   ```bash
+   # Navigate to the MAVLink config script
+   cd px4/PX4-Autopilot/ROMFS/px4fmu_common/init.d-posix/
+   
+   # Open the file
+   nano px4-rc.mavlink
+   
+   # Add:
+   mavlink stop -u 18570 # Stop default instance (usually on port 18570)
+   
+   # Start your custom instance 0 (sending to QGroundControl on Windows)
+   mavlink start -u 14551 -t 172.27.96.1 -p -m onboard -r 4000000
+   ```
 
 4. **Restart the Simulation**
-```bash
-cd simulation
-./sim.sh
-```
-QGroundControl should now automatically connect to the drone and display it on the map. If it still doesn't connect, open the PX4 shell and check MAVLink status:
-```bash
-mavlink status
-```
-You should see 4 instances. Make sure: Instance 0 is bound to port `14551` and Broadcast is enabled. If not, restart the MAVLink instance manually:
-```bash
-# Replace PORT with the actual port (e.g. 18570)
-mavlink stop -u PORT
-mavlink start -u 14551 -p -m onboard -r 4000000
-```
-You’ll need to do this manually each time unless the PX4 startup config is properly updated.
 
----
+   ```bash
+   cd simulation
+   ./sim.sh
+   ```
+   QGroundControl should now automatically connect to the drone and display it on the map. If it still doesn't connect, open the PX4 shell and check MAVLink status:
+   ```bash
+   mavlink status
+   ```
+   You should see 4 instances. Make sure: Instance 0 is bound to port `14551` and Broadcast is enabled. If not, restart the MAVLink instance manually:
+   ```bash
+   # Replace PORT with the actual port (e.g. 18570)
+   mavlink stop -u PORT
+   mavlink start -u 14551 -t 172.27.96.1 -p -m onboard -r 4000000
+   ```
+   You’ll need to do this manually each time unless the PX4 startup config `px4-rc.mavlink` is properly updated.
+   
+   ---
 
 ## Current Capabilities
 
