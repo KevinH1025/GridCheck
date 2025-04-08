@@ -167,7 +167,7 @@ mavlink stop -u 18570 # Stop default instance 0
 mavlink start -u 14551 -p -m onboard -r 4000000
 ```
 
-4. **Rerun the Simulation***
+4. **Rerun the Simulation**
 ```bash
 cd simulation
 ./sim.sh
