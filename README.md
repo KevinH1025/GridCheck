@@ -151,6 +151,7 @@ used to monitor telemetry, view flight status, and send mission commands in real
      - Then follow the next step
 
 3. **Update PX4 MAVLink Port**
+
 If QGC still doesn’t detect PX4, your PX4 instance may be sending on an unexpected port like `18570`.
 In that case, modify the PX4 startup script `px4-rc.mavlink`:
 ```bash
@@ -160,14 +161,14 @@ cd px4/PX4-Autopilot/ROMFS/px4fmu_common/init.d-posix/
 # Open the file
 nano px4-rc.mavlink
 
-# To the default MAVLink add:
+# Add:
 mavlink stop -u 18570 # Stop default instance 0
 
 # Start your custom instance 0
 mavlink start -u 14551 -p -m onboard -r 4000000
 ```
 
-4. **Rerun the Simulation**
+4. **Restart the Simulation**
 ```bash
 cd simulation
 ./sim.sh
@@ -176,9 +177,10 @@ QGroundControl should now automatically connect to the drone and display it on t
 ```bash
 mavlink status
 ```
-You should see 4 instances. Make sure: Instance 0 is bound to port `14551` and Broadcast is enabled, If not, restart the MAVLink instance manually::
+You should see 4 instances. Make sure: Instance 0 is bound to port `14551` and Broadcast is enabled. If not, restart the MAVLink instance manually:
 ```bash
-mavlink stop -u <current-port-of-instance-0>
+# Replace PORT with the actual port (e.g. 18570)
+mavlink stop -u PORT
 mavlink start -u 14551 -p -m onboard -r 4000000
 ```
 You’ll need to do this manually each time unless the PX4 startup config is properly updated.
