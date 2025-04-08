@@ -191,7 +191,7 @@ used to monitor telemetry, view flight status, and send mission commands in real
    ```bash
    mavlink status
    ```
-   You should see 4 instances. Make sure: Instance 0 is bound to port `14551` and Broadcast is enabled. If not, restart the MAVLink instance manually:
+   You should see 4 instances. Make sure: Instance 0 is bound to port `14551` and Broadcast is enabled. If not, restart the MAVLink instance manually, in PX4 shell run:
    ```bash
    # Replace PORT with the actual port (e.g. 18570)
    mavlink stop -u PORT
