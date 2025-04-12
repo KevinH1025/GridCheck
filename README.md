@@ -1,15 +1,15 @@
 # GridCheck
 
 A complete autonomous drone system for grid search with AI detection and self-recharging logic.  
-This project uses **PX4 SITL + Gazebo + MAVSDK + Python** to simulate, control, and automate missions.
+This project uses **PX4 SITL + Gazebo + ROS2 + MAVROS2 + Python/C++** to simulate, control, and automate missions.
 
 ---
 
 ## Features
 
 - PX4 SITL simulation with Gazebo Classic
-- MAVSDK Python integration
-- Takeoff, landing & grid search using Offboard mode
+- ROS2 Python/C++ integration
+- Takeoff, landing & navigation using Offboard mode
 - Real-time telemetry monitoring
 - AI object detection module (YOLO - coming soon)
 - Self-recharging logic (in development)
@@ -19,29 +19,23 @@ This project uses **PX4 SITL + Gazebo + MAVSDK + Python** to simulate, control, 
 ## Project Structure
 ```
 GridCheck/
-│
 ├── px4/                   # PX4 source code (v1.14)
-│
-├── simulation/            # Simulation launch scripts
-│   └── sim.sh      # Starts PX4 + Gazebo simulation
-│
-├── drone_control/         # Python drone control & AI logic
-│   ├── requirements.txt   # Python dependencies
-│   ├── venv/              # Python virtual environment
-│   │
-│   ├── main.py            # Entry point script
-│   │
-│   ├── control/                 # drone control modules
-│   │   ├── flight.py            # Arming, takeoff, landing, fly_to functions
-│   │   ├── mission.py           # mission logic
-│   │   └── battery_manager.py   # Battery monitoring & recharge logic (planned)
-│   │   └── utils.py             # set ups for simulation (port, GPS ...)
-│   │
-│   ├── ai_module/         # YOLO detection module
-│   │   └── detector.py    # Object detection logic (planned)
-│               
+├── ros2_ws/               # ROS 2 workspace packages
+│   └── src/                
+│       ├── drone_control/       # Drone control package
+│       │   ├── drone_control/           
+│       │   │   ├── drone_control.py     # Handles high-level commandes      
+│       │   │   ├── mission_planner.py   # Manages takeoff, arming, landing and task sequencing
+│       │   │   └── state_monitor.py     # Gives the currrent drone state
+│       │   └── set_up.py        # ROS to initialize package
+│       │         
+│       └── simulation/          # Simulation package -> starting
+│           ├── simulation/              
+│           │   └── mavros2_launch.py    # Custom launch file to start MAVROS 2 and packages          
+│           └── set_up.py        # ROS to initialize package
+├── venv/                  # Python virtual environment            
 ├── README.md              # Project description and setup guide
-│
+├── requirements.txt       # Python dependencies
 └── .gitignore             # Git ignore rules
 ```
 
@@ -61,21 +55,8 @@ cd GridCheck
 
 ### 2. Install PX4 Autopilot (v1.14)
 ```bash
-# Clone PX4 into the correct folder
-git clone https://github.com/PX4/PX4-Autopilot.git px4/PX4-Autopilot --recursive
-cd px4/PX4-Autopilot
-
-# Remove all untracked files and directories
-git clean -fdx
-
-# Reset any local changes
-git reset --hard
-
-# Get the right PX4 version
-git checkout v1.14.0  # Stable release for Gazebo 11
-
-# Update submodules
-git submodule update --init --recursive
+# Clone the stable PX4 v1.14.0 in into the correct folder 
+git clone --branch v1.14.0 --recursive https://github.com/PX4/PX4-Autopilot.git px4/PX4-Autopilot
 
 # Install dependencies
 bash ./Tools/setup/ubuntu.sh
@@ -89,6 +70,43 @@ sudo apt install -y gazebo11 libgazebo11-dev
 
 # Verify
 gazebo --version  # Should show "gazebo 11.X.X"
+```
+
+### 4. Set up ROS 2
+```bash
+# Add ROS 2 source
+sudo apt update && sudo apt install -y curl gnupg2 lsb-release
+sudo curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | apt-key add -
+sudo sh -c 'echo "deb http://packages.ros.org/ros2/ubuntu $(lsb_release -cs) main" > /etc/apt/sources.list.d/ros2-latest.list'
+
+# Install ROS 2 Foxy
+sudo apt update
+sudo apt install -y ros-foxy-desktop
+
+# Source ROS 2
+echo "source /opt/ros/foxy/setup.bash" >> ~/.bashrc
+source ~/.bashrc
+```
+
+### 5. Set up MAVROS 2
+```bash
+# Navigate to right folder
+cd GridCheck/ros2_ws/src
+
+# Clone MAVROS 2
+git clone https://github.com/mavlink/mavros.git -b ros2
+vcs import < mavros/mavros2.repos
+
+# Path install?
+cd ..
+rosdep update
+rosdep install --from-paths src --ignore-src -y
+
+# Build everything
+colcon build --symlink-install
+
+# Source MAVROS 2
+source ~/GridCheck/ros2_ws/install/setup.bash
 ```
 
 ### Set Up Python environment 
@@ -120,12 +138,8 @@ cd simulation
 ```
 
 ### 2. Run Drone Mission
-```bash
-# In a new terminal
-cd drone_control
-source venv/bin/activate 
-python3 main.py
-```
+
+Comming soon
 
 ---
 
