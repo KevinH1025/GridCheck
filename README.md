@@ -98,7 +98,7 @@ sudo apt install ros-foxy-mavros ros-foxy-mavros-extras
 sudo apt install geographiclib-tools
 sudo geographiclib-get-geoids egm96-5
 
-# Source ROS 2 and workspace 
+# Source ROS 2
 source /opt/ros/foxy/setup.bash
 source ~/Drone/ros2_ws/install/setup.bash
 ```
@@ -133,7 +133,10 @@ cd simulation
 
 ### 2. Launch MAVROS 2
 ```bash
-ros2 launch mavros mavros.launch.py fcu_url:=udp://:14540@
+cd GridCheck/ros_ws
+colcon build
+source .../GridCheck/ros_ws/install/setup.bash
+ros2 launch mavros mavros.launch.py
 ```
 
 ### 3. Run Drone Mission
