@@ -90,23 +90,17 @@ source ~/.bashrc
 
 ### 5. Set up MAVROS 2
 ```bash
-# Navigate to right folder
-cd GridCheck/ros2_ws/src
+# Installing MAVROS 2
+sudo apt update
+sudo apt install ros-foxy-mavros ros-foxy-mavros-extras
 
-# Clone MAVROS 2
-git clone https://github.com/mavlink/mavros.git -b ros2
-vcs import < mavros/mavros2.repos
+# Install geographiclib datasets (required)
+sudo apt install geographiclib-tools
+sudo geographiclib-get-geoids egm96-5
 
-# Path install?
-cd ..
-rosdep update
-rosdep install --from-paths src --ignore-src -y
-
-# Build everything
-colcon build --symlink-install
-
-# Source MAVROS 2
-source ~/GridCheck/ros2_ws/install/setup.bash
+# Source ROS 2 and workspace 
+source /opt/ros/foxy/setup.bash
+source ~/Drone/ros2_ws/install/setup.bash
 ```
 
 ### Set Up Python environment 
@@ -137,7 +131,12 @@ cd simulation
 ./sim.sh
 ```
 
-### 2. Run Drone Mission
+### 2. Launch MAVROS 2
+```bash
+ros2 launch mavros mavros.launch.py fcu_url:=udp://:14540@
+```
+
+### 3. Run Drone Mission
 
 Comming soon
 
