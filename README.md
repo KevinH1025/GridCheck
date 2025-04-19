@@ -134,7 +134,7 @@ cd simulation
 ### 2. Launch MAVROS 2
 ```bash
 cd GridCheck/ros_ws
-colcon build
+colcon build --symlink-install
 source .../GridCheck/ros_ws/install/setup.bash
 ros2 launch mavros mavros.launch.py
 ```

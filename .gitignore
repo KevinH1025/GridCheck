@@ -8,7 +8,7 @@ __pycache__/
 .vscode/
 
 # === Virtual Environment ===
-drone_control/venv/
+venv/
 
 # === PX4 build folders ===
 px4/PX4-Autopilot/
@@ -20,3 +20,8 @@ simulation/*.sav
 # === Ignore OS files ===
 .DS_Store
 Thumbs.db
+
+# === Ignore ROS2 build and MAVROS2 files ===
+ros2_ws/build
+ros2_ws/log
+ros2_ws/install
