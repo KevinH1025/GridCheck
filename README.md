@@ -9,8 +9,7 @@ This project uses **PX4 SITL + Gazebo + ROS2 + MAVROS2 + Python/C++** to simulat
 
 - PX4 SITL simulation with Gazebo Classic
 - ROS2 Python/C++ integration
-- Takeoff, landing & navigation using Offboard mode
-- Real-time telemetry monitoring
+- Takeoff, landing & navigation using Offboard + GPS mode
 - AI object detection module (YOLO - coming soon)
 - Self-recharging logic (in development)
 
@@ -21,18 +20,27 @@ This project uses **PX4 SITL + Gazebo + ROS2 + MAVROS2 + Python/C++** to simulat
 GridCheck/
 ├── px4/                   # PX4 source code (v1.14)
 ├── ros2_ws/               # ROS 2 workspace packages
-│   └── src/                
+│   └── src/
+│       ├── ai_module/           # AI package (planned)
+│       │            
 │       ├── drone_control/       # Drone control package
-│       │   ├── drone_control/           
-│       │   │   ├── drone_control.py     # Handles high-level commandes      
-│       │   │   ├── mission_planner.py   # Manages takeoff, arming, landing and task sequencing
-│       │   │   └── state_monitor.py     # Gives the currrent drone state
-│       │   └── set_up.py        # ROS to initialize package
+│       │   ├── drone_control/
+│       │   │   ├── config.py             # Control parametrs
+│       │   │   ├── drone_interface.py    # Handles mode changes
+│       │   │   ├── hover_control.py      # Manages timed hovering  
+│       │   │   ├── main_control.py       # high-level commandes, state transition
+│       │   │   ├── mission.yaml          # Contains mission in meters
+│       │   │   ├── mission_publisher.py  # Publishes GPS coordinates
+│       │   │   ├── state_monitor.py      # Tracks drone state from MAVROS
+│       │   │   ├── test.py               # Test GPS connection
+│       │   │   └── utils.py              # Conversions, comparers, helpers
+│       │   └── set_up.py        # Initialize package
 │       │         
 │       └── simulation/          # Simulation package -> starting
 │           ├── simulation/              
-│           │   └── mavros2_launch.py    # Custom launch file to start MAVROS 2 and packages          
-│           └── set_up.py        # ROS to initialize package
+│           │   └── mavros2_launch.py    # Custom launch file to start MAVROS       
+│           └── set_up.py        # Initialize package
+│ 
 ├── venv/                  # Python virtual environment            
 ├── README.md              # Project description and setup guide
 ├── requirements.txt       # Python dependencies
@@ -48,13 +56,13 @@ GridCheck/
 - Python 3.8+
 
 ### 1. Clone Repository
-```bash
+```
 git clone https://github.com/yourusername/GridCheck.git --recursive
 cd GridCheck
 ```
 
 ### 2. Install PX4 Autopilot (v1.14)
-```bash
+```
 # Clone the stable PX4 v1.14.0 in into the correct folder 
 git clone --branch v1.14.0 --recursive https://github.com/PX4/PX4-Autopilot.git px4/PX4-Autopilot
 
@@ -63,7 +71,7 @@ bash ./Tools/setup/ubuntu.sh
 ```
 
 ### 3. Set Up Gazebo 11
-```bash
+```
 sudo apt-add-repository universe
 sudo apt update
 sudo apt install -y gazebo11 libgazebo11-dev
@@ -73,7 +81,7 @@ gazebo --version  # Should show "gazebo 11.X.X"
 ```
 
 ### 4. Set up ROS 2
-```bash
+```
 # Add ROS 2 source
 sudo apt update && sudo apt install -y curl gnupg2 lsb-release
 sudo curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | apt-key add -
@@ -89,7 +97,7 @@ source ~/.bashrc
 ```
 
 ### 5. Set up MAVROS 2
-```bash
+```
 # Installing MAVROS 2
 sudo apt update
 sudo apt install ros-foxy-mavros ros-foxy-mavros-extras
@@ -100,24 +108,22 @@ sudo geographiclib-get-geoids egm96-5
 
 # Source ROS 2
 source /opt/ros/foxy/setup.bash
-source ~/Drone/ros2_ws/install/setup.bash
 ```
 
 ### Set Up Python environment 
-```bash
+```
 # Install Python dependencies 
 sudo apt update
 sudo apt install -y python3-pip python3-venv
 
 # Create and activate virtual environment
-cd drone_control
+cd GridCheck
 python3 -m venv venv
-source venv/bin/activate
 
 # Install Python packages
 pip install -r requirements.txt
 
-# If not using VScode, activate venv before running the project
+# Activate venv before running the project
 source venv/bin/activate
 ```
 
@@ -125,23 +131,60 @@ source venv/bin/activate
 
 ##  Start Simulation
 
-### 1. Launch PX4 + Gazebo
-```bash
+### Terminal 1. Launch PX4 + Gazebo
+```
 cd simulation
 ./sim.sh
+
+# Setup port for MAVROS, in PX4 Shell run:
+mavlink stop -u 14580
+mavlink start -u 14540 -p -m onboard -r 4000000
 ```
 
-### 2. Launch MAVROS 2
-```bash
+### Terminal 2. Start MAVROS 2
+```
+# Navigate to the right folder and source ROS
 cd GridCheck/ros_ws
 colcon build --symlink-install
-source .../GridCheck/ros_ws/install/setup.bash
-ros2 launch mavros mavros.launch.py
+source install/setup.bash
+
+# Start MAVROS
+ros2 launch simulation sim_launch.py
 ```
 
-### 3. Run Drone Mission
+### (Optional) Test GPS Communication (New terminal)
+```
+# Navigate to the right folder and source ROS
+cd GridCheck/ros_ws
+colcon build --symlink-install
+source install/setup.bash
 
-Comming soon
+# Start test
+ros2 run drone_control test
+```
+
+If relative altitude doesn't appear in the terminal: 
+- Confirm MAVROS and PX4 are linked via `mavlink status`.
+- Ensure instance 1 is bound to port `14580` and `Broadcast: enabled`.
+
+### Terminal 3. Run Drone Mission
+
+Communication has to be established between MAVROS and PX4 SITL for following commands to work
+
+```
+# Navigate to the right folder and source ROS
+cd GridCheck/ros_ws
+colcon build --symlink-install
+source install/setup.bash
+
+# Simple mission
+ros2 run drone_control drone_control
+```
+
+Drone will take off, execute a 4-waypoint square mission, and return to launch (RTL) at the end.
+
+### Notes
+- Ensure you run `source` before each session.
 
 ---
 
@@ -173,17 +216,17 @@ used to monitor telemetry, view flight status, and send mission commands in real
    This means PX4's MAVLink messages won't reach QGroundControl unless you explicitly set the Windows IP address as the target.
    
    In **Ubuntu** run:
-   ```bash 
+   ```
    cat /etc/resolv.conf | grep nameserver
    ```
    
    You’ll get something like:
-   ```bash 
+   ```
    nameserver 172.27.96.1
    ```
    
    This is your Windows host IP from inside WSL2. Now modify the PX4 startup script `px4-rc.mavlink`:
-   ```bash
+   ```
    # Navigate to the MAVLink config script
    cd px4/PX4-Autopilot/ROMFS/px4fmu_common/init.d-posix/
    
@@ -199,16 +242,16 @@ used to monitor telemetry, view flight status, and send mission commands in real
 
 4. **Restart the Simulation**
 
-   ```bash
+   ```
    cd simulation
    ./sim.sh
    ```
    QGroundControl should now automatically connect to the drone and display it on the map. If it still doesn't connect, open the PX4 shell and check MAVLink status:
-   ```bash
+   ```
    mavlink status
    ```
    You should see 4 instances. Make sure: Instance 0 is bound to port `14551` and Broadcast is enabled. If not, restart the MAVLink instance manually, in PX4 shell run:
-   ```bash
+   ```
    # Replace PORT with the actual port (e.g. 18570)
    mavlink stop -u PORT
    mavlink start -u 14551 -t 172.27.96.1 -p -m onboard -r 4000000
@@ -221,8 +264,8 @@ used to monitor telemetry, view flight status, and send mission commands in real
 
 - Autonomous takeoff
 - Offboard mode flight
-- Live telemetry feedback
-- Position movement in NED and GPS frame
+- Live feedback
+- Position movement in GPS frame
 - Safe landing
 
 ---
