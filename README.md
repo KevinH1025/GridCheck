@@ -47,6 +47,17 @@ GridCheck/
 └── .gitignore             # Git ignore rules
 ```
 
+## Project Architecture
+The project is structured in modular layers:
+
+![Architecture Diagram](docs/architecture.png)
+
+### Components Overview:
+- AI Logic: Handles autonomy logic such as grid search, object detection (YOLO), battery control.
+- ROS 2 Middleware: Acts as the communication layer (topics, services) between logic and PX4.
+- PX4 Autopilot SITL (Software In The Loop): Receives flight commands and sends telemetry via MAVROS.
+- Gazebo Simulator: Provides realistic physics and sensor simulation using PX4 plugins.
+
 ---
 
 ## Setup Instructions
